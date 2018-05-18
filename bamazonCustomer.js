@@ -1,4 +1,5 @@
 var mysql = require("mysql");
+var prompt = require('cli-prompt')
 
 var connection = mysql.createConnection({
 	host: "localhost",
@@ -31,3 +32,18 @@ function displayProducts() {
   });
 }
 
+function promptUser(){
+	var productID = 0;
+	var 
+	prompt("Give me the ID of the product you would like to buy", function(val) {
+		var productID = val;
+	}, function(err) {
+		console.error("Sorry, I didn't get that " + err)
+	}
+
+	prompt("Give me the ID of the product you would like to buy", function(val) {
+		var productID = val;
+	}, function(err) {
+		console.error("Sorry, I didn't get that " + err)
+	}
+}
