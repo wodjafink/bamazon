@@ -16,7 +16,7 @@ connection.connect(function(err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId + "\n");
   displayProducts();
-  promptUser();
+
 });
 
 function displayProducts() {
@@ -25,25 +25,69 @@ function displayProducts() {
     if (err) throw err;
     // Log all results of the SELECT statement
     for (var i = 0; i < res.length; i++){
-
 	    console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].price);
+    }
+    // connection.end();
+  	promptUser();
+  });
+
+}
+
+function promptUser(){
+	var userItemID = 0;
+	var userItemQTY = 0;
+	prompt('Give me the item ID of an item you would like to buy ', function (val) {
+	  userItemID = val;
+  	
+		prompt('Give me the quantity of item ' + userItemID + ' you would like to buy ', function (val) {
+		  userItemQTY = val;
+
+		  checkForItem(userItemQTY, userItemID);
+
+		  }, function (err) {
+		  console.error('unable to read first name: ' + err);
+		});
+
+	}, function (err) {
+	  console.error('unable to read first name: ' + err);
+	});
+
+}
+
+function checkForItem(itemQTY, itemID){
+  connection.query("SELECT * FROM products WHERE item_id = " + itemID, function(err, res) {
+    if (err) throw err;
+    // Log all results of the SELECT statement
+    if (res[0].stock_quantity >= itemQTY){
+    	console.log("User wants to buy " + itemQTY + " of item " + itemID);
+	    console.log("Total for your transaction is " + (res[0].price * itemQTY));
+	    completeTransaction(itemID, itemQTY, res[0].stock_quantity);
+    } else {
+    	console.log("Insufficient Quantity!  Only " + res[0].stock_quantity + " you want to buy " + itemQTY)
     }
     connection.end();
   });
 }
 
-function promptUser(){
-	var productID = 0;
-	var 
-	prompt("Give me the ID of the product you would like to buy", function(val) {
-		var productID = val;
-	}, function(err) {
-		console.error("Sorry, I didn't get that " + err)
-	}
+function completeTransaction(itemID, itemQTY, totalQTY){
+	console.log("Updating store quantity...\n");
+  var query = connection.query(
+    "UPDATE products SET ? WHERE ?",
+    [
+      {
+        stock_quantity: totalQTY - itemQTY
+      },
+      {
+        item_id: itemID
+      }
+    ],
+    function(err, res) {
+    	if (err) throw err;
+    	else { 
+    		// console.log(res[0].item_id + " products updated! New quantity " + res[0].stock_quantity);
+    	}
+    }
+  );
 
-	prompt("Give me the ID of the product you would like to buy", function(val) {
-		var productID = val;
-	}, function(err) {
-		console.error("Sorry, I didn't get that " + err)
-	}
+  // console.log(query.sql);
 }
